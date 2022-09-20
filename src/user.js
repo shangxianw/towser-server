@@ -20,7 +20,7 @@ class User {
       msg: "登录成功",
       result: null
     }
-    const userInfo = await this.getUserInfo(account)
+    const userInfo = await this.checkUserValidate(account)
     if (!userInfo) {
       resp.code = 2;
       resp.msg = "账号不存在";
@@ -63,7 +63,7 @@ class User {
     }
 
     const { account, password, exp } = md5.decode(cookie);
-    const userInfo = await this.getUserInfo(account)
+    const userInfo = await this.checkUserValidate(account)
     if (!userInfo) {
       resp.code = 110202;
       resp.msg = "账号不存在";
@@ -99,7 +99,76 @@ class User {
     next();
   }
 
-  async getUserInfo(account) {
+  // 03
+  async getUserInfo(req, res) {
+    const resp = {
+      code: 1,
+      msg: "",
+      result: null
+    }
+
+    const cookie = req.cookies["user"];
+    if (!cookie) {
+      resp.code = 110301;
+      resp.msg = "user数据为空";
+      res.send(resp);
+      return;
+    }
+
+    const { account } = md5.decode(cookie);
+    const sql =
+      `
+      SELECT
+        money
+      FROM
+        user
+      WHERE
+        account = "${account}"
+      `
+    const result = await axios.post(this.mysqlUrl, { sql });
+    if (result.data.code !== 1) {
+      resp.code = 110303;
+      resp.msg = "查询基本信息错误"
+      res.send(resp);
+      return;
+    };
+
+    const isNone = result.data.result.length === 0;
+    if (isNone) {
+      resp.code = 110303;
+      resp.msg = "查询不到基本信息"
+      res.send(resp);
+      return;
+    }
+
+    const { money } = result.data.result[0];
+    resp.result = {
+      money
+    }
+    res.send(resp);
+  }
+
+  async addMoney(req, res, account, money) {
+    const resp = {
+      code: 1,
+      msg: "",
+      result: null
+    }
+    const sql =
+      `
+      UPDATE
+        user
+      SET
+        money = ${money}
+      WHERE
+        account = "${account}";
+      `
+    const result = await axios.post(this.mysqlUrl, { sql })
+    resp.result = result
+    res.send(resp);
+  }
+
+  async checkUserValidate(account) {
     const sql = `select * from user where account='${account}'`;
     const resp = await axios.post(this.mysqlUrl, { sql })
     if (resp.data.code === 1) {

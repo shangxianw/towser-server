@@ -66,6 +66,11 @@ class Server {
       res.send("hello express")
     })
 
+    // 请求用户基本信息
+    this.server.get("/getUserInfo", (req, res) => {
+      User.Ins().getUserInfo(req, res);
+    })
+
     // 请求活动列表
     this.server.get("/getActivityList", (req, res) => {
       Activity.Ins().getActivityList(req, res);

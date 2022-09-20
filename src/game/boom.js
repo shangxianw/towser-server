@@ -76,8 +76,18 @@ class Boom {
       token: md5.encode(JSON.stringify(token))
     }
 
-    resp.result = tmp
+    resp.result = tmp;
     res.send(resp);
+
+    // 玩家+1
+    sql =
+      `
+      UPDATE activity
+        SET play_count = play_count + 1
+      WHERE
+        id = ${activity};
+      `
+    axios.post(this.mysqlUrl, { sql });
   }
 
   // 03
@@ -120,6 +130,40 @@ class Boom {
       const fakeChessBoards = this.getFakeChessBoard(newChessBoadrs);
       data.chessBoards = newChessBoadrs;
       const isOver = this.checkIsOver(newChessBoadrs);
+
+      if (isOver) {
+        // 不校验了
+        const cookie = req.cookies["user"];
+        const { account } = md5.decode(cookie);
+        const date = new Date();
+        const win_time = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}`
+        let sql =
+          `
+          INSERT INTO
+            pass
+            (activity, user, start_time, win_time)
+          VALUE
+            (${data.activity}, "${account}", "${win_time}", "${win_time}")
+          `
+        const result = await axios.post(this.mysqlUrl, { sql });
+        if (result.data.code !== 1) {
+          resp.code = 150302;
+          resp.msg = "查询基本信息错误"
+          res.send(resp);
+          return;
+        };
+
+        // 通关玩家+1（前端显示用，不计较成败，不能作为实际结算）
+        sql =
+          `
+        UPDATE activity
+          SET win_count = win_count + 1
+        WHERE
+          id = ${data.activity};
+        `
+        axios.post(this.mysqlUrl, { sql });
+      }
+
       data.status = isOver ? 3 : 1;
       resp.result = {
         status: isOver ? 3 : 1,

@@ -15,7 +15,9 @@ class Activity {
       SELECT
         activity.id,
         game_type.name as gameName,
-        sponsor.name as sponsorName
+        sponsor.name as sponsorName,
+        activity.money,
+        activity.win_count as winCount
       FROM
         activity
       RIGHT JOIN
@@ -83,7 +85,10 @@ class Activity {
           activity.game,
           boom_spec.row,
           boom_spec.col,
-          boom_spec.boom
+          boom_spec.boom,
+          activity.money,
+          activity.play_count as playCount,
+          activity.win_count as winCount
         FROM
           activity
         RIGHT JOIN
@@ -119,6 +124,7 @@ class Activity {
     } else {
       resp.code = 2;
       resp.msg = "查询错误"
+      resp.result = result;
     }
     res.send(resp);
   }
