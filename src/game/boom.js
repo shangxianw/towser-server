@@ -167,7 +167,7 @@ class Boom {
       data.status = isOver ? 3 : 1;
       resp.result = {
         status: isOver ? 3 : 1,
-        chessBoards: fakeChessBoards,
+        chessBoards: isOver ? data.chessBoards : fakeChessBoards,
         token: md5.encode(JSON.stringify(data))
       }
     }
