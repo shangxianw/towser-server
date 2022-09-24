@@ -10,14 +10,32 @@ class Activity {
       msg: "",
       result: null
     }
+
+    const { kind, sort } = req.query;
+
+    const targetKind = {
+      1: "end",
+      2: "win_count",
+      3: "play_count"
+    }[Number(kind)] || "end"
+
+    const targetSort = {
+      1: "DESC",
+      2: "ASC"
+    }[Number(sort)] || "ASC"
+
     const sql =
       `
       SELECT
         activity.id,
+        activity.sponsor as sponsor,
         game_type.name as gameName,
         sponsor.name as sponsorName,
         activity.money,
-        activity.win_count as winCount
+        activity.win_count as winCount,
+        activity.play_count as playCount,
+        activity.start,
+        activity.end
       FROM
         activity
       RIGHT JOIN
@@ -28,6 +46,9 @@ class Activity {
         sponsor
       ON
         sponsor.id = activity.sponsor
+      ORDER BY
+        ${targetKind}
+      ${targetSort}
       `;
     const result = await axios.post(this.mysqlUrl, { sql })
     if (result.data.code === 1) {
