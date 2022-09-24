@@ -230,7 +230,7 @@ class Boom {
     for (let i = 0; i < total; i++) {
       chessBoards.push({
         index: i,
-        row: Math.floor(i / row),
+        row: Math.floor(i / col),
         col: Math.floor(i % col),
         isBoom: false,
         calc: null
