@@ -31,7 +31,7 @@ function startServer() {
 
   app.post("/", async (req, res) => {
     const { sql } = req.body;
-    const resp = await this.query(sql);
+    const resp = await query(sql);
     res.send(resp);
   })
 
