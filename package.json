@@ -2,7 +2,7 @@
   "name": "towser-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,6 +20,7 @@
     "body-parser": "^1.20.0",
     "cluster": "^0.7.7",
     "cookie-parser": "^1.4.6",
-    "express": "^4.18.1"
+    "express": "^4.18.1",
+    "mysql": "^2.18.1"
   }
 }
