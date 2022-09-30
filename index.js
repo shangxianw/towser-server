@@ -34,4 +34,9 @@ else {
 	app.get("/", (req, res) => {
 		res.send("hello towser");
 	})
+
+	app.get("/getUserInfo", (req, res) => {
+		const user = require("./src/user");
+		user.getUserInfo(req, res);
+	})
 }
