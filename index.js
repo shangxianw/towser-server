@@ -1,4 +1,5 @@
 const cluster = require("cluster");
+const user = require("./src/user");
 
 if (cluster.isMaster) {
 	const numCPUs = require("os").cpus().length;
@@ -35,8 +36,11 @@ else {
 		res.send("hello towser");
 	})
 
+	app.post("/login", (req, res) => {
+		user.login(req, res);
+	})
+
 	app.get("/getUserInfo", (req, res) => {
-		const user = require("./src/user");
 		user.getUserInfo(req, res);
 	})
 }
