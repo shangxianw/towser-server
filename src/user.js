@@ -13,7 +13,7 @@ async function checkUserLogin(req, res, next) {
 
   const token = req.cookies["user"];
   if (!token) {
-    resp.code = 2;
+    resp.code = 1001;
     resp.msg = "用户信息不存在";
     res.send(resp);
     return;
@@ -24,14 +24,14 @@ async function checkUserLogin(req, res, next) {
   const result = await axios.post(mysqlUrl, { sql })
   const userInfo = result.data.result[0];
   if (!userInfo) {
-    resp.code = 3;
+    resp.code = 1002;
     resp.msg = "账号不存在";
     res.send(resp);
     return;
   }
 
   if (userInfo.password !== password) {
-    resp.code = 4;
+    resp.code = 1003;
     resp.msg = "密码不正确";
     res.send(resp);
     return;
@@ -39,7 +39,7 @@ async function checkUserLogin(req, res, next) {
 
   const now = (new Date()).getTime();
   if (now > exp) {
-    resp.code = 5;
+    resp.code = 1004;
     resp.msg = "登录过期";
     res.send(resp);
     return;
