@@ -4,6 +4,50 @@ const mysqlUrl = "http://localhost:7707"
 
 const srcret = "towser2022";
 
+async function checkUserLogin(req, res, next) {
+  const resp = {
+    code: 1,
+    msg: "",
+    result: null
+  }
+
+  const token = req.cookies["user"];
+  if (!token) {
+    resp.code = 2;
+    resp.msg = "用户信息不存在";
+    res.send(resp);
+    return;
+  }
+
+  const { account, password, exp } = jwt.verify(token, srcret);
+  const sql = `select password from user where account='${account}'`;
+  const result = await axios.post(mysqlUrl, { sql })
+  const userInfo = result.data.result[0];
+  if (!userInfo) {
+    resp.code = 3;
+    resp.msg = "账号不存在";
+    res.send(resp);
+    return;
+  }
+
+  if (userInfo.password !== password) {
+    resp.code = 4;
+    resp.msg = "密码不正确";
+    res.send(resp);
+    return;
+  }
+
+  const now = (new Date()).getTime();
+  if (now > exp) {
+    resp.code = 5;
+    resp.msg = "登录过期";
+    res.send(resp);
+    return;
+  }
+
+  next();
+}
+
 async function login(req, res) {
   const resp = {
     code: 1,
@@ -31,8 +75,8 @@ async function login(req, res) {
       return;
     }
 
-    // 3天没登录就过期
-    expTime = 1000 * 60 * 60 * 24 * 3;
+    // 1小时没登录就过期
+    expTime = 1000 * 60 * 60 * 1;
     const data = {
       account,
       password,
@@ -92,5 +136,6 @@ async function getUserInfo(req, res) {
 
 module.exports = {
   login,
-  getUserInfo
+  getUserInfo,
+  checkUserLogin
 }

@@ -25,11 +25,17 @@ else {
 		console.log(`服务器已启动, 访问地址为 http://localhost:80`)
 	});
 	app.all("*", (req, res, next) => {
-		res.header("Access-Control-Allow-Origin", "*"); // http://localhost:80
+		res.header("Access-Control-Allow-Origin", "http://localhost:8080");
 		res.header("Access-Control-Allow-Methods", "GET, POST");
 		res.header("Access-Control-Allow-Credentials", "true");
 		res.header("Access-Control-Allow-Headers", "Content-Type");
-		next();
+
+		const flag = ["/login"].every(item => req.params[0] !== item)
+		if (flag) {
+			user.checkUserLogin(req, res, next);
+		} else {
+			next();
+		}
 	})
 
 	app.get("/", (req, res) => {
