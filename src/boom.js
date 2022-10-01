@@ -4,6 +4,59 @@ const jwt = require('jsonwebtoken');
 const mysqlUrl = "http://localhost:7707"
 const srcret = "towser2022";
 
+function checkIsOver(chessBoards) {
+  let flag = true;
+  for (let rows of chessBoards) {
+    for (let item of rows) {
+      if (!item.isBoom && item.calc === null) {
+        flag = false;
+        break;
+      }
+    }
+  }
+  return flag;
+}
+
+function calc(row, col, chessBoards) {
+  const rows = chessBoards[row];
+  if (!rows) return [];
+  const cell = rows[col];
+  if (!cell) return [];
+  if (typeof cell.calc === "number") return [];
+  if (cell.isBoom) return [];
+
+  // 记录8个方向的偏移量
+  const offsetMatrix = [
+    [-1, -1], [-1, 0], [-1, +1],
+    [0, -1], [0, +1],
+    [+1, -1], [+1, 0], [+1, +1],
+  ]
+
+  let sum = 0;
+  offsetMatrix.forEach((item, index) => {
+    const x = col + item[1];
+    const y = row + item[0];
+
+    const rows = chessBoards[y]
+    if (!rows) return;
+    const cell = rows[x];
+    if (!cell) return;
+
+    if (!cell.isBoom) return;
+    sum++;
+  })
+
+  cell.calc = sum;
+  if (sum === 0) {
+    offsetMatrix.forEach(item => {
+      const x = col + item[1];
+      const y = row + item[0];
+      calc(y, x, chessBoards);
+    })
+  }
+  return chessBoards;
+}
+
 function createChessBoard(row, col, boom) {
   const total = row * col;
   if (boom > total) return [];
@@ -124,6 +177,104 @@ async function startGame(req, res, activity, spec) {
   }
 }
 
+async function openBoomCell(req, res) {
+  const resp = {
+    code: 1,
+    msg: "",
+    result: null
+  }
+
+  async function query() {
+    const { row, col, token } = req.body;
+    const data = jwt.verify(token, srcret);
+
+    if (data.status === 2) {
+      resp.code = 150301;
+      resp.msg = "已结束，不能继续";
+      resp.result = {
+        status: 2,
+        chessBoards: data.chessBoards,
+        token
+      }
+      res.send(resp);
+      return;
+    }
+
+    // 计算完之后，赋值新的棋盘，需要注意row, col超出数组界限
+    const cell = data.chessBoards[row][col];
+    if (!cell.isBoom) {
+      // 计算过的地方不让点！前端也要做好检测
+      if (typeof cell.calc === "number") {
+        const fakeChessBoards = getFakeChessBoard(data.chessBoards);
+        resp.result = {
+          status: 1,
+          chessBoards: fakeChessBoards,
+          token
+        };
+        res.send(resp);
+        return;
+      }
+      const newChessBoadrs = calc(row, col, JSON.parse(JSON.stringify(data.chessBoards)));
+      const fakeChessBoards = getFakeChessBoard(newChessBoadrs);
+      data.chessBoards = newChessBoadrs;
+      const isOver = checkIsOver(newChessBoadrs);
+
+      if (isOver) {
+        // 不校验了
+        const cookie = req.cookies["user"];
+        const { account } = jwt.sign(cookie, srcret);
+        const date = new Date();
+        const win_time = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}`
+        let sql =
+          `
+          INSERT INTO
+            pass
+            (activity, user, start_time, win_time)
+          VALUE
+            (${data.activity}, "${account}", "${win_time}", "${win_time}")
+          `
+        const result = await axios.post(mysqlUrl, { sql });
+        // 通关玩家+1（前端显示用，不计较成败，不能作为实际结算）
+        sql =
+          `
+        UPDATE activity
+          SET win_count = win_count + 1
+        WHERE
+          id = ${data.activity};
+        `
+        axios.post(mysqlUrl, { sql });
+      }
+
+      data.status = isOver ? 3 : 1;
+      resp.result = {
+        status: isOver ? 3 : 1,
+        chessBoards: isOver ? data.chessBoards : fakeChessBoards,
+        token: jwt.sign(JSON.stringify(data), srcret)
+      }
+    }
+    // 点击了炸弹
+    else {
+      data.status = 2;
+      resp.result = {
+        status: 2,
+        chessBoards: data.chessBoards,
+        token: jwt.sign(JSON.stringify(data), srcret)
+      }
+    }
+    res.send(resp)
+  }
+
+  try {
+    await query();
+  } catch ({ message, stack }) {
+    resp.code = 2;
+    resp.msg = "查询发生异常";
+    resp.result = { message, stack };
+    res.send(resp);
+  }
+}
+
 module.exports = {
-  startGame
+  startGame,
+  openBoomCell
 }

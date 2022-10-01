@@ -2,6 +2,7 @@ const cluster = require("cluster");
 const user = require("./src/user");
 const activity = require("./src/activity");
 const game = require("./src/game");
+const boom = require("./src/boom");
 
 if (cluster.isMaster) {
 	const numCPUs = require("os").cpus().length;
@@ -65,5 +66,11 @@ else {
 	// 创建游戏
 	app.get("/startGame", (req, res) => {
 		game.startGame(req, res);
+	})
+
+	//////////////////////////////////// 扫雷
+	// 点击单元格
+	app.post("/openBoomCell", (req, res) => {
+		boom.openBoomCell(req, res);
 	})
 }
