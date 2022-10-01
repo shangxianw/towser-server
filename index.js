@@ -24,11 +24,12 @@ else {
 	app.use(cookieParser());
 	app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: false }));
-	app.listen(80, () => {
-		console.log(`服务器已启动, 访问地址为 http://localhost:80`)
+	app.listen(7788, () => {
+		console.log(`服务器已启动, 访问地址为 http://localhost:7788`)
 	});
 	app.all("*", (req, res, next) => {
-		res.header("Access-Control-Allow-Origin", "http://localhost:8080");
+		res.header("Access-Control-Allow-Origin", req.headers.origin);
+		res.header("Access-Control-Expose-Headers", "Authorization");
 		res.header("Access-Control-Allow-Methods", "GET, POST");
 		res.header("Access-Control-Allow-Credentials", "true");
 		res.header("Access-Control-Allow-Headers", "Content-Type");

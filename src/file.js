@@ -17,7 +17,7 @@ class File {
 
   async initHeader() {
     this.server.all("*", async (req, res, next) => {
-      res.header("Access-Control-Allow-Origin", "http://localhost:8080");
+      res.header("Access-Control-Allow-Origin", req.headers.origin);
       res.header("Access-Control-Allow-Methods", "GET");
       res.header("Access-Control-Allow-Credentials", "true");
       res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -26,7 +26,7 @@ class File {
   }
 
   getFile(req, res) {
-    const url = resolve("./") + "/../static";
+    const url = resolve("./") + "/static";
     const path = url + req.originalUrl;
     console.log(`请求资源`, path);
     fs.readFile(path, (error, data) => {
