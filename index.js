@@ -1,5 +1,7 @@
 const cluster = require("cluster");
 const user = require("./src/user");
+const activity = require("./src/activity");
+const game = require("./src/game");
 
 if (cluster.isMaster) {
 	const numCPUs = require("os").cpus().length;
@@ -48,5 +50,20 @@ else {
 
 	app.get("/getUserInfo", (req, res) => {
 		user.getUserInfo(req, res);
+	})
+
+	// 请求活动列表
+	app.get("/getActivityList", (req, res) => {
+		activity.getActivityList(req, res);
+	})
+
+	// 请求活动详情
+	app.get("/getActivetyDetail", (req, res) => {
+		activity.getActivetyDetail(req, res);
+	})
+
+	// 创建游戏
+	app.get("/startGame", (req, res) => {
+		game.startGame(req, res);
 	})
 }
