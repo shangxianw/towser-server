@@ -64,6 +64,11 @@ else {
 		activity.getActivetyDetail(req, res);
 	})
 
+	// 检查游戏是否能开始
+	app.get("/checkCanStart", (req, res) => {
+		game.checkCanStart(req, res);
+	})
+
 	// 创建游戏
 	app.get("/startGame", (req, res) => {
 		game.startGame(req, res);
