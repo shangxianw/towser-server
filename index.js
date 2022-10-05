@@ -3,6 +3,7 @@ const user = require("./src/user");
 const activity = require("./src/activity");
 const game = require("./src/game");
 const boom = require("./src/boom");
+const admin = require("./src/admin");
 
 if (cluster.isMaster) {
 	const numCPUs = require("os").cpus().length;
@@ -98,5 +99,19 @@ else {
 	// 点击单元格
 	app.post("/openBoomCell", (req, res) => {
 		boom.openBoomCell(req, res);
+	})
+
+
+	//////////////////////////////////// admin
+	app.get("/getSponsorList", (req, res) => {
+		admin.getSponsorList(req, res);
+	})
+
+	app.get("/getSponsorDetail", (req, res) => {
+		admin.getSponsorDetail(req, res);
+	})
+
+	app.post("/updateSponsorDetail", (req, res) => {
+		admin.updateSponsorDetail(req, res);
 	})
 }
