@@ -83,7 +83,45 @@ async function login(req, res) {
       exp: (new Date).getTime() + expTime
     }
     const token = jwt.sign(JSON.stringify(data), srcret);
-    resp.result = token;
+    resp.result = {
+      account,
+      token,
+    }
+    res.send(resp);
+  }
+
+  try {
+    await query();
+  } catch ({ message, stack }) {
+    resp.code = 2;
+    resp.msg = "查询发生异常";
+    resp.result = { message, stack };
+    res.send(resp);
+  }
+}
+
+async function updateUserInfo(req, res) {
+  const resp = {
+    code: 1,
+    msg: "",
+    result: null
+  }
+
+  async function query() {
+    const cookie = req.cookies["user"];
+    const { account } = jwt.verify(cookie, srcret);
+    const { bank } = req.body;
+    // bank需要做严格校验，不要相信用户!
+    const sql =
+      `
+      UPDATE
+        user
+      SET
+        bank="${bank}"
+      WHERE
+        account="${account}"
+      `
+    await axios.post(mysqlUrl, { sql });
     res.send(resp);
   }
 
@@ -134,8 +172,51 @@ async function getUserInfo(req, res) {
   }
 }
 
+async function getUserInfo2(req, res) {
+  const resp = {
+    code: 1,
+    msg: "",
+    result: null
+  }
+
+  async function query() {
+    const cookie = req.cookies["user"];
+    const { account } = jwt.verify(cookie, srcret);
+    const sql =
+      `
+      SELECT
+        account,
+        money,
+        bank
+      FROM
+        user
+      WHERE
+        account = "${account}"
+      `
+    const result = await axios.post(mysqlUrl, { sql });
+    const { money, bank } = result.data.result[0];
+    resp.result = {
+      account,
+      money,
+      bank
+    }
+    res.send(resp);
+  }
+
+  try {
+    await query();
+  } catch ({ message, stack }) {
+    resp.code = 2;
+    resp.msg = "查询发生异常";
+    resp.result = { message, stack };
+    res.send(resp);
+  }
+}
+
 module.exports = {
   login,
   getUserInfo,
-  checkUserLogin
+  checkUserLogin,
+  getUserInfo2,
+  updateUserInfo
 }

@@ -54,6 +54,14 @@ else {
 		user.getUserInfo(req, res);
 	})
 
+	app.get("/getUserInfo2", (req, res) => {
+		user.getUserInfo2(req, res);
+	})
+
+	app.post(`/updateUserInfo`, (req, res) => {
+		user.updateUserInfo(req, res);
+	})
+
 	// 请求活动列表
 	app.get("/getActivityList", (req, res) => {
 		activity.getActivityList(req, res);
