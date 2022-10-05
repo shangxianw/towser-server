@@ -106,7 +106,7 @@ async function getUserInfo(req, res) {
 
   async function query() {
     const cookie = req.cookies["user"];
-    const { account } = md5.decode(cookie);
+    const { account } = jwt.verify(cookie, srcret);
     const sql =
       `
       SELECT
