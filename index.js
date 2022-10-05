@@ -58,6 +58,18 @@ else {
 		user.getUserInfo2(req, res);
 	})
 
+	app.get("/getWellInfo", (req, res) => {
+		user.getWellInfo(req, res);
+	})
+
+	app.post("/well", (req, res) => {
+		user.well(req, res);
+	})
+
+	app.get("/getWellRecords", (req, res) => {
+		user.getWellRecords(req, res);
+	})
+
 	app.post(`/updateUserInfo`, (req, res) => {
 		user.updateUserInfo(req, res);
 	})
