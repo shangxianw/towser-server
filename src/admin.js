@@ -331,6 +331,38 @@ async function getCalcist(req, res) {
 
   async function query() {
     const { type } = req.query;
+    const typeSQL = {
+      // 未开始
+      0: `
+          WHERE
+            UNIX_TIMESTAMP(NOW()) < UNIX_TIMESTAMP(start)
+          AND
+            UNIX_TIMESTAMP(NOW()) < UNIX_TIMESTAMP(end)
+          `,
+      // 进行中
+      1: `
+          WHERE
+            UNIX_TIMESTAMP(NOW()) >= UNIX_TIMESTAMP(start)
+          AND
+            UNIX_TIMESTAMP(NOW()) < UNIX_TIMESTAMP(end)
+          `,
+      // 未结算
+      2: `
+          WHERE
+            UNIX_TIMESTAMP(NOW()) > UNIX_TIMESTAMP(end)
+          AND
+            activity.is_calc = 0
+      
+        `,
+      // 已结算
+      3: `
+          WHERE
+            UNIX_TIMESTAMP(NOW()) > UNIX_TIMESTAMP(end)
+          AND
+            activity.is_calc = 1
+      
+        `
+    }
     const sql =
       `
       SELECT
@@ -343,10 +375,7 @@ async function getCalcist(req, res) {
         sponsor
       ON
         sponsor.id = activity.sponsor
-      WHERE
-        UNIX_TIMESTAMP(end) < UNIX_TIMESTAMP(NOW())
-      AND
-        activity.is_calc = ${type}
+      ${typeSQL[type]}
       `
     const result = await axios.post(mysqlUrl, { sql });
     resp.result = result.data.result;

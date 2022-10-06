@@ -136,7 +136,7 @@ else {
 	})
 
 	app.post("/addNewSpponsor", (req, res) => {
-		admin.addNewSpponsor(req, res);
+		admin.addNewSpponsor(req, res); 
 	})
 
 	app.post("/deleteSponsor", (req, res) => {
