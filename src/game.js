@@ -6,12 +6,13 @@ const mysqlUrl = "http://localhost:7707";
 async function checkCanStart(req, res) {
   const resp = {
     code: 1,
-    msg: "",
+    msg: "开始游戏",
     result: null
   }
 
   async function query() {
     const activity = Number(req.query.activity);
+    // 找不到该游戏
     let sql =
       `
     select
@@ -28,6 +29,8 @@ async function checkCanStart(req, res) {
     `
     const result = await axios.post(mysqlUrl, { sql });
     if (result.data.result.length <= 0) {
+      resp.code = 3;
+      resp.msg = "找不到该游戏"
       resp.result = false;
       res.send(resp);
       return;
@@ -36,6 +39,7 @@ async function checkCanStart(req, res) {
     const power = result.data.result[0].power;
     const cookie = req.cookies["user"];
     const { account } = jwt.verify(cookie, srcret);
+    // 体力不足
     sql =
       `
       SELECT
@@ -50,6 +54,26 @@ async function checkCanStart(req, res) {
     if (myPower < power) {
       resp.code = 4;
       resp.msg = "体力不足";
+      res.send(resp);
+      return;
+    }
+
+    // 通关人数超出最大限制
+    sql =
+      `
+      SELECT
+        win_count as count,
+        money
+      FROM
+        activity
+      WHERE
+        id = ${activity}
+      `
+    const result5 = await axios.post(mysqlUrl, { sql });
+    const { count, money } = result5.data.result[0];
+    if (count >= money * 100) {
+      resp.code = 5;
+      resp.msg = "不能再玩啦, 大家都太牛了, 钱不够分了";
       res.send(resp);
       return;
     }
@@ -121,7 +145,7 @@ async function startGame(req, res) {
     }
 
     // 计算消耗体力之后的恢复时间
-    const nextPowerTime = result2?.data?.result[0]?.nextPowerTime || (Math.floor((Date.now()/1000)) + 1 * 60 * 10);
+    const nextPowerTime = result2?.data?.result[0]?.nextPowerTime || (Math.floor((Date.now() / 1000)) + 1 * 60 * 10);
     const n = new Date((nextPowerTime) * 1000);
     const a = `${n.getFullYear()}-${n.getMonth() + 1}-${n.getDate()} ${n.getHours()}:${n.getMinutes()}:${n.getSeconds()}`;
     sql =
