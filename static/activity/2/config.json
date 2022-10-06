@@ -1,0 +1,12 @@
+{
+  "image": {
+    "frontcover": "./frontcover.png",
+    "details": [
+      "./detail/1.png",
+      "./detail/2.png",
+      "./detail/3.png",
+      "./detail/4.png",
+      "./detail/5.png"
+    ]
+  }
+}
