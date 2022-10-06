@@ -143,7 +143,7 @@ async function getWellInfo(req, res) {
   }
 
   async function query() {
-    const cookie = cookies["user"];
+    const cookie = req.cookies["user"];
     const { account } = jwt.verify(cookie, srcret);
     const sql =
       `
@@ -245,7 +245,7 @@ async function well(req, res) {
       res.send(resp);
       return;
     }
-    
+
     const date = new Date();
     sql =
       `
@@ -257,7 +257,7 @@ async function well(req, res) {
         account="${account}"
       `
     await axios.post(mysqlUrl, { sql });
-    
+
     const now = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}`
     sql =
       `
