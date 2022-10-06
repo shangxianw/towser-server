@@ -127,9 +127,12 @@ async function startGame(req, res, activity, spec) {
     const chessBoards = createChessBoard(row, col, boom);
     // 给前端展示的棋盘
     const fakeChessBoards = getFakeChessBoard(chessBoards);
+    // 开始时间
+    const start = Date.now();
 
     // 点击单元格时传递的是这个
     const token = {
+      start,
       activity,
       gameType: 1,
       spec,
@@ -224,14 +227,16 @@ async function openBoomCell(req, res) {
         const cookie = req.cookies["user"];
         const { account } = jwt.verify(cookie, srcret);
         const date = new Date();
-        const win_time = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}`
+        const win_time = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+        const startDate = new Date(data.start);
+        const start = `${startDate.getFullYear()}-${startDate.getMonth() + 1}-${startDate.getDate()} ${startDate.getHours()}:${startDate.getMinutes()}:${startDate.getSeconds()}`;
         let sql =
           `
           INSERT INTO
             pass
             (activity, user, start_time, win_time)
           VALUE
-            (${data.activity}, "${account}", "${win_time}", "${win_time}")
+            (${data.activity}, "${account}", "${start}", "${win_time}")
           `
         const result = await axios.post(mysqlUrl, { sql });
         // 通关玩家+1（前端显示用，不计较成败，不能作为实际结算）

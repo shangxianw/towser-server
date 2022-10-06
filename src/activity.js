@@ -334,10 +334,52 @@ async function getActivetyDetail(req, res) {
   }
 }
 
+async function getWinPlayerList(req, res) {
+  const resp = {
+    code: 1,
+    msg: "",
+    result: null
+  }
+
+  async function query() {
+    const activity = req.query.activity;
+    let sql =
+      `
+      SELECT
+        pass.user,
+        DATE_FORMAT(pass.start_time, '%Y-%m-%d %H:%i:%s') as startTime,
+        DATE_FORMAT(pass.win_time, '%Y-%m-%d %H:%i:%s') as winTime
+      FROM
+        pass
+      INNER JOIN
+        activity
+      ON
+        activity.id = pass.activity
+      WHERE
+        pass.activity = ${activity}
+      AND
+        UNIX_TIMESTAMP(pass.win_time) < UNIX_TIMESTAMP(activity.end)
+      `
+    const result = await axios.post(mysqlUrl, { sql });
+    resp.result = result.data.result;
+    res.send(resp);
+  }
+
+  try {
+    await query();
+  } catch ({ message, stack }) {
+    resp.code = 2;
+    resp.msg = "查询发生异常";
+    resp.result = { message, stack };
+    res.send(resp);
+  }
+}
+
 module.exports = {
   getActivityList,
   getActivetyDetail,
   getWinPlayer,
   calcActivity,
-  addNewActivity
+  addNewActivity,
+  getWinPlayerList
 }

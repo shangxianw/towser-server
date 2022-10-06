@@ -85,6 +85,11 @@ else {
 		activity.getActivetyDetail(req, res);
 	})
 
+	// 请求通关玩家列表
+	app.get("/getWinPlayerList", (req, res) => {
+		activity.getWinPlayerList(req, res);
+	})
+
 	// 检查游戏是否能开始
 	app.get("/checkCanStart", (req, res) => {
 		game.checkCanStart(req, res);
