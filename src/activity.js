@@ -43,9 +43,11 @@ async function getActivityList(req, res) {
         sponsor
       ON
         sponsor.id = activity.sponsor
+      WHERE
+          UNIX_TIMESTAMP(activity.end) > UNIX_TIMESTAMP(NOW())
       ORDER BY
         ${targetKind[Number(kind)] || "end"}
-      ${targetSort[Number(sort)] || "ASC"}
+        ${targetSort[Number(sort)] || "ASC"}
       `;
     const result = await axios.post(mysqlUrl, { sql });
     resp.result = result.data.result;
