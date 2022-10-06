@@ -143,7 +143,7 @@ async function getWellInfo(req, res) {
   }
 
   async function query() {
-    const cookie = req.cookies["user"];
+    const cookie = cookies["user"];
     const { account } = jwt.verify(cookie, srcret);
     const sql =
       `

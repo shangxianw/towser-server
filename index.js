@@ -23,8 +23,8 @@ else {
 	const bodyParser = require("body-parser");
 	const app = express();
 	app.use(cookieParser());
-	app.use(bodyParser.json());
-	app.use(bodyParser.urlencoded({ extended: false }));
+	app.use(bodyParser.json({ limit: '5mb' }));
+	app.use(bodyParser.urlencoded({ extended: false, limit: '5mb', extended: true }));
 	app.listen(7788, () => {
 		console.log(`服务器已启动, 访问地址为 http://localhost:7788`)
 	});
@@ -103,18 +103,6 @@ else {
 
 
 	//////////////////////////////////// admin
-	app.get("/getSponsorList", (req, res) => {
-		admin.getSponsorList(req, res);
-	})
-
-	app.get("/getSponsorDetail", (req, res) => {
-		admin.getSponsorDetail(req, res);
-	})
-
-	app.post("/updateSponsorDetail", (req, res) => {
-		admin.updateSponsorDetail(req, res);
-	})
-
 	app.get("/getUserList", (req, res) => {
 		admin.getUserList(req, res);
 	})
@@ -136,11 +124,7 @@ else {
 	})
 
 	app.post("/addNewSpponsor", (req, res) => {
-		admin.addNewSpponsor(req, res); 
-	})
-
-	app.post("/deleteSponsor", (req, res) => {
-		admin.deleteSponsor(req, res);
+		admin.addNewSpponsor(req, res);
 	})
 
 	app.get("/getCalcist", (req, res) => {
@@ -157,5 +141,9 @@ else {
 
 	app.post("/calcActivity", (req, res) => {
 		activity.calcActivity(req, res);
+	})
+
+	app.post("/addNewActivity", (req, res) => {
+		activity.addNewActivity(req, res);
 	})
 }
