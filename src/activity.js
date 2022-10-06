@@ -1,5 +1,5 @@
 const axios = require("axios");
-const mysqlUrl = "http://localhost:7707"
+const mysqlUrl = "http://localhost:7707";
 
 const targetKind = {
   1: "end",
@@ -287,6 +287,7 @@ async function getActivetyDetail(req, res) {
         `
         SELECT
           activity.id,
+          activity.power,
           game_type.name as gameName,
           activity.sponsor_name as sponsorName,
           activity.desc,

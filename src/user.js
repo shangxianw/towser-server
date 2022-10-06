@@ -1,8 +1,7 @@
 const axios = require("axios");
 const jwt = require('jsonwebtoken');
-const mysqlUrl = "http://localhost:7707"
-
 const srcret = "towser2022";
+const mysqlUrl = "http://localhost:7707"
 
 async function checkUserLogin(req, res, next) {
   const resp = {
@@ -294,20 +293,22 @@ async function getUserInfo(req, res) {
   async function query() {
     const cookie = req.cookies["user"];
     const { account } = jwt.verify(cookie, srcret);
+    await calcPower(account);
     const sql =
       `
       SELECT
-        money
+        money,
+        power,
+        max_power as maxPower,
+        speed,
+        UNIX_TIMESTAMP(next_power_time) as nextPowerTime
       FROM
         user
       WHERE
         account = "${account}"
       `
     const result = await axios.post(mysqlUrl, { sql });
-    const { money } = result.data.result[0];
-    resp.result = {
-      money
-    }
+    resp.result = result.data.result[0];
     res.send(resp);
   }
 
@@ -362,12 +363,79 @@ async function getUserInfo2(req, res) {
   }
 }
 
+function calcPower(account) {
+  return new Promise(async succ => {
+    let sql =
+      `
+      SELECT
+        power,
+        max_power as maxPower,
+        speed,
+        UNIX_TIMESTAMP(next_power_time) as nextPowerTime
+      FROM
+        user
+      WHERE
+        account = "${account}"
+      `
+    const result = await axios.post(mysqlUrl, { sql });
+    let { power, maxPower, speed, nextPowerTime } = result.data.result[0];
+    const now = Math.floor(Date.now() / 1000);
+
+
+    // 当前体力满了
+    if (power >= maxPower) {
+      sql =
+        `
+        UPDATE
+          user
+        SET
+          power = ${maxPower},
+          next_power_time = NULL
+        WHERE
+          account = "${account}"
+        `
+      await axios.post(mysqlUrl, { sql });
+      succ(true);
+      return;
+    }
+
+    // 没到时间，不用修改
+    const total = now - nextPowerTime;
+    if (total < 0) {
+      succ(true);
+      return;
+    }
+
+    // 10分钟
+    const space = 1 * 60 * 10;
+    const count = Math.floor(total / space) + 1;
+    power = Math.min(maxPower, power + count * speed);
+    nextPowerTime += count * space;
+    const n = new Date(nextPowerTime * 1000);
+    const newPowerTime = `${n.getFullYear()}-${n.getMonth() + 1}-${n.getDate()} ${n.getHours()}:${n.getMinutes()}:${n.getSeconds()}`;
+
+    sql =
+      `
+    UPDATE
+      user
+    SET
+      power = ${power},
+      next_power_time = ${power < maxPower ? `"${newPowerTime}"` : "NULL"}
+    WHERE
+      account = "${account}"
+      `
+    await axios.post(mysqlUrl, { sql });
+    succ(true);
+  })
+}
+
 module.exports = {
   login,
   getUserInfo,
   checkUserLogin,
   getUserInfo2,
   updateUserInfo,
+  calcPower,
   getWellInfo,
   well,
   getWellRecords

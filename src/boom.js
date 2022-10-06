@@ -222,7 +222,7 @@ async function openBoomCell(req, res) {
       if (isOver) {
         // 不校验了
         const cookie = req.cookies["user"];
-        const { account } = jwt.sign(cookie, srcret);
+        const { account } = jwt.verify(cookie, srcret);
         const date = new Date();
         const win_time = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}`
         let sql =
