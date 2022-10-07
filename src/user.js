@@ -237,7 +237,7 @@ async function well(req, res) {
     const result = await axios.post(mysqlUrl, { sql });
     const { money } = result.data.result[0];
     const { cash } = req.body;
-    const newMoney = money - cash;
+    const newMoney = (money - cash).toFixed(2);
     if (newMoney < 0) {
       resp.code = 3;
       resp.result = `提现金额超出提现金额`
