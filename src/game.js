@@ -17,20 +17,26 @@ async function checkCanStart(req, res) {
       `
     select
       id,
-      power
+      power,
+      UNIX_TIMESTAMP(start) as start
     FROM
       activity
     WHERE
       id = ${activity}
-    AND
-      UNIX_TIMESTAMP(NOW()) >= UNIX_TIMESTAMP(start)
-    AND
-      UNIX_TIMESTAMP(NOW()) < UNIX_TIMESTAMP(end)
     `
     const result = await axios.post(mysqlUrl, { sql });
     if (result.data.result.length <= 0) {
       resp.code = 3;
       resp.msg = "找不到该游戏"
+      resp.result = false;
+      res.send(resp);
+      return;
+    }
+
+    const { start } = result.data.result[0];
+    if (Date.now() < start * 1000) {
+      resp.code = 6;
+      resp.msg = "活动未开始"
       resp.result = false;
       res.send(resp);
       return;

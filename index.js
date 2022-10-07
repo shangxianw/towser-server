@@ -80,6 +80,11 @@ else {
 		activity.getActivityList(req, res);
 	})
 
+	// 请求预告活动列表
+	app.get("/getForeActivityList", (req, res) => {
+		activity.getForeActivityList(req, res);
+	})
+
 	// 请求活动详情
 	app.get("/getActivetyDetail", (req, res) => {
 		activity.getActivetyDetail(req, res);

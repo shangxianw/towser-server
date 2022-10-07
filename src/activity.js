@@ -40,9 +40,54 @@ async function getActivityList(req, res) {
         activity.game = game_type.id
       WHERE
           UNIX_TIMESTAMP(activity.end) > UNIX_TIMESTAMP(NOW())
+      AND
+        UNIX_TIMESTAMP(NOW()) >= UNIX_TIMESTAMP(activity.start)
       ORDER BY
         ${targetKind[Number(kind)] || "end"}
         ${targetSort[Number(sort)] || "ASC"}
+      `;
+    const result = await axios.post(mysqlUrl, { sql });
+    resp.result = result.data.result;
+    res.send(resp);
+  }
+
+  try {
+    await query();
+  } catch ({ message, stack }) {
+    resp.code = 2;
+    resp.msg = "查询发生异常";
+    resp.result = { message, stack };
+    res.send(resp);
+  }
+}
+
+async function getForeActivityList(req, res) {
+  const resp = {
+    code: 1,
+    msg: "",
+    result: null
+  }
+
+  async function query() {
+    const sql =
+      `
+      SELECT
+        activity.id,
+        activity.sponsor_name as sponsorName,
+        game_type.name as gameName,
+        activity.money,
+        activity.win_count as winCount,
+        activity.play_count as playCount,
+        activity.start,
+        activity.end
+      FROM
+        activity
+      RIGHT JOIN
+        game_type
+      ON
+        activity.game = game_type.id
+      WHERE
+        UNIX_TIMESTAMP(NOW()) < UNIX_TIMESTAMP(activity.start)
       `;
     const result = await axios.post(mysqlUrl, { sql });
     resp.result = result.data.result;
@@ -298,6 +343,7 @@ async function getActivetyDetail(req, res) {
           activity.money,
           activity.play_count as playCount,
           activity.win_count as winCount,
+          activity.start,
           activity.end
         FROM
           activity
@@ -381,5 +427,6 @@ module.exports = {
   getWinPlayer,
   calcActivity,
   addNewActivity,
+  getForeActivityList,
   getWinPlayerList
 }
