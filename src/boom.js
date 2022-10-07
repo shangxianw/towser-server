@@ -47,10 +47,16 @@ function calc(row, col, chessBoards) {
   })
 
   cell.calc = sum;
-  if (sum === 0) {
+  if (sum === 0 && !cell.isFlag) {
     offsetMatrix.forEach(item => {
       const x = col + item[1];
       const y = row + item[0];
+      try {
+        if (chessBoards[y][x].isFlag)
+          return;
+      } catch (e) {
+        e;
+      }
       calc(y, x, chessBoards);
     })
   }
@@ -67,6 +73,7 @@ function createChessBoard(row, col, boom) {
       row: Math.floor(i / col),
       col: Math.floor(i % col),
       isBoom: false,
+      isFlag: false,
       calc: null
     })
   }
@@ -188,7 +195,7 @@ async function openBoomCell(req, res) {
   }
 
   async function query() {
-    const { row, col, token } = req.body;
+    const { row, col, isFlag, token } = req.body;
     const data = jwt.verify(token, srcret);
 
     if (data.status === 2) {
@@ -205,6 +212,23 @@ async function openBoomCell(req, res) {
 
     // 计算完之后，赋值新的棋盘，需要注意row, col超出数组界限
     const cell = data.chessBoards[row][col];
+    // 插旗
+    if (isFlag) {
+      cell.isFlag = !cell.isFlag;
+      const fakeChessBoards = getFakeChessBoard(data.chessBoards);
+      resp.result = {
+        status: 1,
+        chessBoards: fakeChessBoards,
+        token: jwt.sign(JSON.stringify(data), srcret)
+      };
+      res.send(resp);
+      return;
+    }
+    // 在不是插旗的情况下，点击旗子
+    if (cell.isFlag) {
+      cell.isFlag = false;
+    }
+
     if (!cell.isBoom) {
       // 计算过的地方不让点！前端也要做好检测
       if (typeof cell.calc === "number") {
