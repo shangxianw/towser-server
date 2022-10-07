@@ -1,5 +1,6 @@
 {
   "image": {
+    "flag": "./flag.png",
     "frontcover": "./frontcover.png",
     "details": [
       "./detail/1.png",
