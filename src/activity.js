@@ -104,113 +104,6 @@ async function getForeActivityList(req, res) {
   }
 }
 
-async function getWinPlayer(req, res) {
-  const resp = {
-    code: 1,
-    msg: "",
-    result: null
-  }
-
-  async function query() {
-    const id = req.query.activity;
-    let sql =
-      `
-      SELECT
-        pass.user as account,
-        pass.win_time as winTime
-      FROM
-        pass
-      INNER JOIN
-        activity
-      ON
-        activity.id = pass.activity
-      WHERE
-        pass.activity = ${id}
-      AND
-        UNIX_TIMESTAMP(pass.win_time ) < UNIX_TIMESTAMP(activity.end)
-
-      `
-    const result = await axios.post(mysqlUrl, { sql });
-    resp.result = result.data.result;
-    res.send(resp);
-  }
-
-  try {
-    await query();
-  } catch ({ message, stack }) {
-    resp.code = 2;
-    resp.msg = "查询发生异常";
-    resp.result = { message, stack };
-    res.send(resp);
-  }
-}
-
-async function addNewActivity(req, res) {
-  const resp = {
-    code: 1,
-    msg: "",
-    result: null
-  }
-
-  async function query() {
-    const { sponsor, desc, game, spec, start, end, money, fileList, frontcover } = req.body;
-
-    // 添加活动
-    let sql =
-      `
-      INSERT INTO
-        activity
-        (sponsor, game, spec, start, end, money, play_count, win_count, is_calc, activity.desc, sponsor_name)
-      VALUES
-        (1, ${game}, ${spec}, "${start}", "${end}", ${money}, 0, 0, 0, "${desc}", "${sponsor}")
-      `
-    let result = await axios.post(mysqlUrl, { sql });
-    sql =
-      `
-      SELECT LAST_INSERT_ID() as id
-      FROM activity
-      `
-    result = await axios.post(mysqlUrl, { sql });
-    const { id } = result.data.result[0];
-    const fs = require("fs");
-    fs.mkdir(`./static/activity/${id}`, () => {
-      fs.mkdir(`./static/activity/${id}/detail`, () => {
-        // 保存config
-        const config = {
-          image: {
-            frontcover: "./frontcover.png",
-            details: Array(fileList.length).fill(1).map((item, index) => `./detail/${index}.png`)
-          }
-        }
-        fs.writeFile(`./static/activity/${id}/config.json`, JSON.stringify(config), () => { });
-        // 保存封面图
-        const body = frontcover[0].content;
-        const base64Data = body.replace(/^data:image\/png;base64,/, "");
-        const binaryData = new Buffer.from(base64Data, 'base64');
-        fs.writeFile(`./static/activity/${id}/frontcover.png`, binaryData, () => { });
-        // 保存detail
-        fileList.forEach((item, index) => {
-          const body = item.content;
-          const base64Data = body.replace(/^data:image\/png;base64,/, "");
-          const binaryData = new Buffer.from(base64Data, 'base64');
-          fs.writeFile(`./static/activity/${id}/detail/${index}.png`, binaryData, () => { });
-        });
-      });
-    })
-    resp.result = id;
-    res.send(resp);
-  }
-
-  try {
-    await query();
-  } catch ({ message, stack }) {
-    resp.code = 2;
-    resp.msg = "查询发生异常";
-    resp.result = { message, stack };
-    res.send(resp);
-  }
-}
-
 // 结算
 async function calcActivity(req, res) {
   const resp = {
@@ -393,8 +286,8 @@ async function getWinPlayerList(req, res) {
       `
       SELECT
         pass.user,
-        DATE_FORMAT(pass.start_time, '%Y-%m-%d %H:%i:%s') as startTime,
-        DATE_FORMAT(pass.win_time, '%Y-%m-%d %H:%i:%s') as winTime
+        UNIX_TIMESTAMP(pass.start_time) as startTime,
+        UNIX_TIMESTAMP(pass.win_time) as winTime
       FROM
         pass
       INNER JOIN
@@ -424,9 +317,7 @@ async function getWinPlayerList(req, res) {
 module.exports = {
   getActivityList,
   getActivetyDetail,
-  getWinPlayer,
   calcActivity,
-  addNewActivity,
   getForeActivityList,
   getWinPlayerList
 }

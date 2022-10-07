@@ -3,7 +3,6 @@ const user = require("./src/user");
 const activity = require("./src/activity");
 const game = require("./src/game");
 const boom = require("./src/boom");
-const admin = require("./src/admin");
 
 if (cluster.isMaster) {
 	const numCPUs = require("os").cpus().length;
@@ -111,49 +110,7 @@ else {
 		boom.openBoomCell(req, res);
 	})
 
-
-	//////////////////////////////////// admin
-	app.get("/getUserList", (req, res) => {
-		admin.getUserList(req, res);
-	})
-
-	app.get("/getUserDetail", (req, res) => {
-		admin.getUserDetail(req, res);
-	})
-
-	app.post("/updateUserDetail", (req, res) => {
-		admin.updateUserDetail(req, res);
-	})
-
-	app.post("/addNewUser", (req, res) => {
-		admin.addNewUser(req, res);
-	})
-
-	app.post("/deleteUser", (req, res) => {
-		admin.deleteUser(req, res);
-	})
-
-	app.post("/addNewSpponsor", (req, res) => {
-		admin.addNewSpponsor(req, res);
-	})
-
-	app.get("/getCalcist", (req, res) => {
-		admin.getCalcist(req, res);
-	})
-
-	app.get("/getCalcDetail", (req, res) => {
-		admin.getCalcDetail(req, res);
-	})
-
-	app.get("/getWinPlayer", (req, res) => {
-		activity.getWinPlayer(req, res);
-	})
-
 	app.post("/calcActivity", (req, res) => {
 		activity.calcActivity(req, res);
-	})
-
-	app.post("/addNewActivity", (req, res) => {
-		activity.addNewActivity(req, res);
 	})
 }
