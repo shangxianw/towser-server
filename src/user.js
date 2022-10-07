@@ -257,7 +257,7 @@ async function well(req, res) {
       `
     await axios.post(mysqlUrl, { sql });
 
-    const now = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}`
+    const now = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
     sql =
       `
       INSERT INTO
@@ -266,7 +266,7 @@ async function well(req, res) {
       VALUE
         ("${account}", ${cash}, "${now}", 1)
       `
-    await axios.post(mysqlUrl, { sql });
+    const s = await axios.post(mysqlUrl, { sql });
     resp.result = {
       money: newMoney
     }
