@@ -94,6 +94,11 @@ else {
 		activity.getWinPlayerList(req, res);
 	})
 
+	// 请求我通关的列表
+	app.get("/getMyCustomsList", (req, res) => {
+		activity.getMyCustomsList(req, res);
+	})
+
 	// 检查游戏是否能开始
 	app.get("/checkCanStart", (req, res) => {
 		game.checkCanStart(req, res);

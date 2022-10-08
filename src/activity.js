@@ -1,5 +1,7 @@
 const axios = require("axios");
 const mysqlUrl = "http://localhost:7707";
+const jwt = require('jsonwebtoken');
+const srcret = "towser2022";
 
 const targetKind = {
   1: "end",
@@ -314,10 +316,53 @@ async function getWinPlayerList(req, res) {
   }
 }
 
+async function getMyCustomsList(req, res) {
+  const resp = {
+    code: 1,
+    msg: "",
+    result: null
+  }
+
+  async function query() {
+    const cookie = req.cookies["user"];
+    const { account } = jwt.verify(cookie, srcret);
+
+    let sql =
+      `
+      SELECT
+        pass.id,
+        pass.status,
+        DATE_FORMAT(pass.win_time, "%Y-%m-%d %h:%i:%s") as winTime,
+        activity.sponsor_name as sponsorName
+      FROM
+        pass
+      INNER JOIN
+        activity
+      ON
+        activity.id = pass.activity
+      WHERE
+        user = "${account}"
+      `
+    const result = await axios.post(mysqlUrl, { sql });
+    resp.result = result.data.result;
+    res.send(resp);
+  }
+
+  try {
+    await query();
+  } catch ({ message, stack }) {
+    resp.code = 2;
+    resp.msg = "查询发生异常";
+    resp.result = { message, stack };
+    res.send(resp);
+  }
+}
+
 module.exports = {
   getActivityList,
   getActivetyDetail,
   calcActivity,
   getForeActivityList,
+  getMyCustomsList,
   getWinPlayerList
 }
