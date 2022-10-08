@@ -191,7 +191,8 @@ async function getWellRecords(req, res) {
         cash,
         apply_time as applyTime,
         status,
-        well.desc
+        well.desc,
+        pay_account as payAccount
       FROM
         well
       WHERE
@@ -236,7 +237,7 @@ async function well(req, res) {
       `
     const result = await axios.post(mysqlUrl, { sql });
     const { money } = result.data.result[0];
-    const { cash } = req.body;
+    const { cash, payAccount } = req.body;
     const newMoney = (money - cash).toFixed(2);
     if (newMoney < 0) {
       resp.code = 3;
@@ -262,9 +263,9 @@ async function well(req, res) {
       `
       INSERT INTO
         well
-        (user, cash, apply_time, status)
+        (user, cash, apply_time, status, pay_account)
       VALUE
-        ("${account}", ${cash}, "${now}", 1)
+        ("${account}", ${cash}, "${now}", 1, ${payAccount})
       `
     const s = await axios.post(mysqlUrl, { sql });
     resp.result = {

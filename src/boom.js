@@ -80,7 +80,7 @@ function createChessBoard(row, col, boom) {
   let count = 0;
   const len = chessBoards.length;
   let i = Math.floor(Math.random() * len);
-  while (count <= boom) {
+  while (count < boom) {
     i++;
     if (i >= len) {
       i = 0;
