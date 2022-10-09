@@ -331,15 +331,22 @@ async function getMyCustomsList(req, res) {
       `
       SELECT
         pass.id,
+        activity.sponsor_name as sponsorName,
+        game_type.id as game,
+        game_type.name as gameName,
+        activity.spec,
         pass.status,
-        DATE_FORMAT(pass.win_time, "%Y-%m-%d %h:%i:%s") as winTime,
-        activity.sponsor_name as sponsorName
+        DATE_FORMAT(pass.win_time, "%Y-%m-%d %h:%i:%s") as winTime
       FROM
         pass
       INNER JOIN
         activity
       ON
         activity.id = pass.activity
+      INNER JOIN
+        game_type
+      ON
+        game_type.id = activity.game
       WHERE
         user = "${account}"
       `
