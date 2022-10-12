@@ -74,8 +74,8 @@ async function login(req, res) {
       return;
     }
 
-    // 1小时没登录就过期
-    expTime = 1000 * 60 * 60 * 1;
+    // 1天没登录就过期
+    expTime = 1000 * 60 * 60 * 24;
     const data = {
       account,
       password,

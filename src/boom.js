@@ -27,9 +27,11 @@ function calc(row, col, chessBoards) {
 
   // 记录8个方向的偏移量
   const offsetMatrix = [
-    [-1, -1], [-1, 0], [-1, +1],
-    [0, -1], [0, +1],
-    [+1, -1], [+1, 0], [+1, +1],
+    [-2, -2], [-2, -1], [-2, 0], [-2, 1], [-2, 2],
+    [-1, -2], [-1, -1], [-1, 0], [-1, 1], [-1, 2],
+    [0, -2], [0, -1], [0, 1], [0, 2],
+    [1, -2], [1, -1], [1, 0], [1, 1], [1, 2],
+    [2, -2], [2, -1], [2, 0], [2, 1], [2, 2]
   ]
 
   let sum = 0;
@@ -69,7 +71,6 @@ function createChessBoard(row, col, boom) {
   const chessBoards = [];
   for (let i = 0; i < total; i++) {
     chessBoards.push({
-      index: i,
       row: Math.floor(i / col),
       col: Math.floor(i % col),
       isBoom: false,
